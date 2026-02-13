@@ -42,5 +42,49 @@
  *   // => { months: -1, totalPaid: -1, totalInterest: -1 }
  */
 export function calculateEMI(principal, monthlyRate, emi) {
-  // Your code here
+  const invalidResult = { months: -1, totalPaid: -1, totalInterest: -1 };
+
+  // Validation: all params must be positive numbers
+  if (
+    typeof principal !== 'number' || principal <= 0 ||
+    typeof monthlyRate !== 'number' || monthlyRate <= 0 ||
+    typeof emi !== 'number' || emi <= 0
+  ) {
+    return invalidResult;
+  }
+
+  // Infinite loop protection: EMI must be greater than first month's interest
+  const firstMonthInterest = principal * monthlyRate;
+  if (emi <= firstMonthInterest) {
+    return invalidResult;
+  }
+
+  let remaining = principal;
+  let months = 0;
+  let totalPaid = 0;
+  let totalInterest = 0;
+
+  while (remaining > 0) {
+    // Calculate interest
+    const interest = remaining * monthlyRate;
+    totalInterest += interest;
+    remaining += interest;
+
+    // Deduct EMI (or remaining if less than EMI)
+    if (remaining <= emi) {
+      totalPaid += remaining;
+      remaining = 0;
+    } else {
+      totalPaid += emi;
+      remaining -= emi;
+    }
+
+    months++;
+  }
+
+  // Round to 2 decimal places
+  totalPaid = Math.round(totalPaid * 100) / 100;
+  totalInterest = Math.round(totalInterest * 100) / 100;
+
+  return { months, totalPaid, totalInterest };
 }
